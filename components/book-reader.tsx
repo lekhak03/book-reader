@@ -26,7 +26,7 @@ export function BookReader({ view, currentPage, onPageChange, isFullscreen = fal
     
     // Account for padding
     const paddingTop = isFullscreen ? 48 : 32;
-    const paddingBottom = isFullscreen ? 64 : 48;
+    const paddingBottom = isFullscreen ? 64 : 32;
     const pageNumberSpace = 60;
     const maxHeight = 750 - paddingTop - paddingBottom - pageNumberSpace;
     
@@ -42,7 +42,8 @@ export function BookReader({ view, currentPage, onPageChange, isFullscreen = fal
     let currentPageText = "";
     
     for (let i = 0; i < sentences.length; i++) {
-      const sentence = sentences[i].trim();
+      let sentence = sentences[i].trim();
+      if (i % 4 == 0) sentence = sentence + '\n'
       const testText = currentPageText + (currentPageText ? ' ' : '') + sentence;
       measurer.textContent = testText;
       
@@ -125,6 +126,7 @@ export function BookReader({ view, currentPage, onPageChange, isFullscreen = fal
         {view === "double" && (
           <div className="absolute left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-[#a89575] z-10" />
         )}
+        
 
         {/* Pages Container */}
         <div 
