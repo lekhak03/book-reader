@@ -84,11 +84,14 @@ const handleGenerateReading = async () => {
           <p className="text-muted-foreground max-w-md">
             Fetching a classic from Project Gutenberg...
           </p>
+            <p className="text-muted-foreground max-w-md">
+            It takes time because this is a free API, and I am formatted at once. No Optimization, Bare Bones!...
+          </p>
         </div>
       )}
 
         {/* Reader Section - Normal Mode */}
-        {isGenerated && !isFullscreen && (
+        {!isLoading && isGenerated && !isFullscreen && (
           <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* View Toggle */}
             <div className="flex justify-center items-center gap-4">
