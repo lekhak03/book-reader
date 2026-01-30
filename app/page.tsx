@@ -16,14 +16,20 @@ export default function Home() {
   const [isGenerated, setIsGenerated] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [fullText, setFullText] = useState<string>("");
+  const [bookTitle, setTitle] = useState("");
+  const [bookAuthor, setAuthor] = useState("");
+  const [bookSite, setBookSite] = useState("");
+  const [selectedCategory, setSelected] = useState("Fiction")
 
 const handleGenerateReading = async () => {
   setIsLoading(true);
-  const response = await fetch(`/api/get-book?topic=Fiction`);
+  const response = await fetch(`/api/get-book?topic=${selectedCategory}`);
   const data = await response.json();
   setFullText(data.text);
+  setTitle(data.bookTitle)
+  setAuthor(data.bookAuthor)
+  setBookSite(data.bookSite)
   setIsGenerated(true);
   setIsFullscreen(true);
   setIsLoading(false);
@@ -57,7 +63,9 @@ const handleGenerateReading = async () => {
           <h2 className="text-center text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
             Select a Category
           </h2>
-          <CategoryBar />
+          <CategoryBar 
+          selectedCategory={selectedCategory}
+          setSelected={setSelected}/>
         </section>
 
         {/* Generate Button */}
@@ -120,7 +128,11 @@ const handleGenerateReading = async () => {
 
             {/* Book Metadata */}
             <div className="pt-4">
-              <BookMetadata />
+              <BookMetadata 
+              bookTitle={bookTitle} 
+              bookAuthor={bookAuthor} 
+              bookUrl={bookSite} 
+/>
             </div>
           </section>
         )}
@@ -168,9 +180,9 @@ const handleGenerateReading = async () => {
             <div className="flex items-center gap-3">
               <BookOpen className="w-5 h-5 text-accent" />
               <span className="font-serif text-lg font-bold text-foreground">
-                Pride and Prejudice
+                <span>{bookTitle}</span>
               </span>
-              <span className="text-sm text-muted-foreground">— Jane Austen</span>
+              <span className="text-sm text-muted-foreground">— {bookAuthor}</span>
             </div>
             <div className="flex items-center gap-3">
               <ViewToggle view={view} onViewChange={setView} />
@@ -200,7 +212,9 @@ const handleGenerateReading = async () => {
 
           {/* Minimal Footer */}
           <div className="flex items-center justify-center px-6 py-3 border-t border-border bg-card/50">
-            <BookMetadata />
+            <BookMetadata bookTitle={bookTitle} 
+              bookAuthor={bookAuthor} 
+              bookUrl={bookSite} />
           </div>
         </div>
       )}
