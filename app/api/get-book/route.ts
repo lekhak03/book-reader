@@ -17,6 +17,7 @@ const topics = [
 ];
 
 export async function GET(request: Request) {  // ← Only takes Request
+    
     const { searchParams } = new URL(request.url);
     const topic = searchParams.get('topic') || 'Fiction';  // ← Remove duplicate
 
@@ -40,16 +41,18 @@ export async function GET(request: Request) {  // ← Only takes Request
     const books_on_page = page_data.results;
     const random_book = books_on_page[Math.floor(Math.random() * books_on_page.length)];
     const book_text_url = random_book.formats['text/plain; charset=us-ascii'];
-    // const book_text_url = random_book.formats['text/html'];
-    console.log(random_book.formats)
+    const bookSite = random_book.formats['text/html'].split('.html.images')[0]
+    const bookTitle = random_book.title
+    const bookAuthor = random_book.authors[0].name.split(',')[1] + ' ' +  random_book.authors[0].name.split(',')[0]
+
     if (book_text_url) {
         const response = await fetch(book_text_url);
         if (!response.ok) {
             throw new Error("Failed to fetch book text");
         }
         const bookText = await response.text();
-        return NextResponse.json({ text: bookText });  // ← Return NextResponse
+        return NextResponse.json({ text: bookText, bookSite: bookSite, bookTitle: bookTitle, bookAuthor: bookAuthor });  // ← Return NextResponse
     }
 
-    return NextResponse.json({ text: "HELLO" });  // ← Return NextResponse
+    return NextResponse.json({ text: "HELLO" });  // ← Return NextResponse: Default for test
 }
