@@ -92,9 +92,6 @@ const handleGenerateReading = async () => {
           <p className="text-muted-foreground max-w-md">
             Fetching a classic from Project Gutenberg...
           </p>
-            <p className="text-muted-foreground max-w-md">
-            It takes time because this is a free API, and I am formatted at once. No Optimization, Bare Bones!...
-          </p>
         </div>
       )}
 
