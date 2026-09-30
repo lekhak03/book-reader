@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { BookPage } from "./book-page";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
+import { getCachedPages, setCachedPages } from "@/utils/pageCache";
 
 interface BookReaderProps {
   view: "single" | "double";
@@ -13,59 +14,95 @@ interface BookReaderProps {
   fulltext?: string;
 }
 
+function createCacheKey({
+  fulltext,
+  view,
+  isFullscreen,
+}: {
+  fulltext: string;
+  view: string;
+  isFullscreen: boolean;
+}) {
+  return [
+    view,
+    isFullscreen ? 'fs' : 'normal',
+    fulltext.length,
+    fulltext.slice(0, 100), // enough entropy, avoids hashing cost
+  ].join('|');
+}
+
+
 export function BookReader({ view, currentPage, onPageChange, isFullscreen = false, fulltext}: BookReaderProps) {
   const [pages, setPages] = useState<string[]>([]);
   const measureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!fulltext || !measureRef.current) {
+  if (!fulltext || !measureRef.current) return;
+
+  const cacheKey = createCacheKey({ fulltext, view, isFullscreen });
+
+  let cancelled = false;
+
+  async function loadOrCreatePages() {
+    // 1. Try cache
+    const cached = await getCachedPages(cacheKey);
+    if (cached && !cancelled) {
+      setPages(cached);
       return;
     }
 
-    const measurer = measureRef.current;
-    
-    // Account for padding
+    // 2. Compute pages (your existing logic)
+    const measurer = measureRef.current!;
+
     const paddingTop = isFullscreen ? 48 : 32;
     const paddingBottom = isFullscreen ? 64 : 32;
     const pageNumberSpace = 60;
     const maxHeight = 750 - paddingTop - paddingBottom - pageNumberSpace;
-    
-    // Clean the text (no HTML parsing, just plain text)
+
+    if (!fulltext) fulltext="HELLO"
     const cleanedText = fulltext
-      .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+      .replace(/\s+/g, ' ')
       .trim();
-    
-    // Split into sentences
+
     const sentences = cleanedText.match(/[^.!?]+[.!?]+/g) || [];
-    
+
     const newPages: string[] = [];
-    let currentPageText = "";
-    
+    let currentPageText = '';
+
     for (let i = 0; i < sentences.length; i++) {
       let sentence = sentences[i].trim();
-      if (i % 4 == 0) sentence = sentence + '\n'
-      const testText = currentPageText + (currentPageText ? ' ' : '') + sentence;
+      if (i % 4 === 0) sentence += '\n';
+
+      const testText =
+        currentPageText + (currentPageText ? ' ' : '') + sentence;
+
       measurer.textContent = testText;
-      
+
       if (measurer.offsetHeight > maxHeight && currentPageText) {
-        // Page is full, save current page
         newPages.push(currentPageText.trim());
-        // Start new page with current sentence
         currentPageText = sentence;
       } else {
-        // Sentence fits, add it
         currentPageText = testText;
       }
     }
-    
-    // Add last page
+
     if (currentPageText.trim()) {
       newPages.push(currentPageText.trim());
     }
-    
-    console.log('Total pages created:', newPages.length);
-    setPages(newPages);
-  }, [fulltext, view, isFullscreen]);
+
+    if (!cancelled) {
+      setPages(newPages);
+      setCachedPages(cacheKey, newPages); // 🔥 save once
+    }
+  }
+
+  loadOrCreatePages();
+
+  return () => {
+    cancelled = true;
+  };
+}, [fulltext, view, isFullscreen]);
+
 
   const pageContents = pages;
   const totalPages = pages.length;
