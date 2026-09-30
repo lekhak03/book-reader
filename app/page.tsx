@@ -8,6 +8,8 @@ import { BookReader } from "@/components/book-reader";
 import { BookMetadata } from "@/components/book-metadata";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { book } from "./testText";
+
 
 // import { get_text } from "@/services/get_text_from_gutenberg";
 export default function Home() {
@@ -35,6 +37,12 @@ const handleGenerateReading = async () => {
   setIsLoading(false);
 };
 
+var fullTexTest=book;
+
+function getTextDiv() {
+  var div_height = 400;
+  var div_widght = 400;
+}
 
   const handleExitFullscreen = () => {
     setIsFullscreen(false);
